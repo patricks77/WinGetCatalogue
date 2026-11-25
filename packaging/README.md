@@ -11,7 +11,7 @@ $setupDir = Join-Path $releaseDir "setup"
 dotnet publish WinGetCatalogue.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained true -p:WindowsPackageType=None -p:AppxPackage=false -p:WindowsAppSDKSelfContained=true -p:EnableWinAppRunSupport=false "-p:Version=$version" --output $appDir
 if ($LASTEXITCODE -ne 0) { throw "Publishing the application failed." }
 
-dotnet build packaging/WinGetCatalogue.wixproj -c Release "-p:ReleaseVersion=$version" "-p:AppPublishDir=$appDir" --output $setupDir
+dotnet build packaging/WinGetCatalogue.wixproj -c Release -t:Rebuild "-p:ReleaseVersion=$version" "-p:AppPublishDir=$appDir" --output $setupDir
 if ($LASTEXITCODE -ne 0) { throw "Building the MSI failed." }
 
 Get-FileHash (Join-Path $setupDir "WinGetCatalogue-$version-win-x64.msi") -Algorithm SHA256
