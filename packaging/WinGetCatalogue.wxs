@@ -1,0 +1,31 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="WinGetCatalogue"
+           Manufacturer="Patrick (patricks77)"
+           Version="$(var.ReleaseVersion)"
+           UpgradeCode="{C356613E-08E9-4D9D-B3EF-21A8F272AEE0}"
+           Scope="perUserOrMachine">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of WinGetCatalogue is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+    <Icon Id="CatalogueIcon" SourceFile="..\Assets\AppIcon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="CatalogueIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/patricks77/WinGetCatalogue" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="WinGetCatalogue" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Catalogue" Title="WinGetCatalogue">
+      <Component Directory="INSTALLFOLDER">
+        <File Id="CatalogueExe" Source="!(bindpath.app)\WinGetCatalogue.exe" KeyPath="yes">
+          <Shortcut Id="CatalogueShortcut" Directory="ProgramMenuFolder" Name="WinGetCatalogue"
+                    WorkingDirectory="INSTALLFOLDER" Advertise="yes" />
+        </File>
+      </Component>
+      <Files Directory="INSTALLFOLDER" Include="!(bindpath.app)\**">
+        <Exclude Files="!(bindpath.app)\WinGetCatalogue.exe" />
+        <Exclude Files="!(bindpath.app)\**\*.pdb" />
+      </Files>
+    </Feature>
+  </Package>
+</Wix>

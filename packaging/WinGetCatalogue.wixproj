@@ -1,0 +1,13 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <ReleaseVersion Condition="'$(ReleaseVersion)' == ''">0.1.0</ReleaseVersion>
+    <OutputName>WinGetCatalogue-$(ReleaseVersion)-win-x64</OutputName>
+    <DefineConstants>ReleaseVersion=$(ReleaseVersion)</DefineConstants>
+    <!-- ICE03 rejects valid language IDs in the unmodified WinUI runtime binaries. -->
+    <SuppressIces>ICE03</SuppressIces>
+  </PropertyGroup>
+  <ItemGroup>
+    <BindPath Include="$(AppPublishDir)" BindName="app" />
+  </ItemGroup>
+</Project>

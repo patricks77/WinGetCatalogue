@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WinGetCatalogue.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinGetCatalogue"
+    Language="en-US">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="CatalogHeroBrush" Color="#E8F0FC" />
+                    <SolidColorBrush x:Key="CatalogGlyphBackgroundBrush" Color="#E6EFFC" />
+                    <SolidColorBrush x:Key="CatalogGlyphForegroundBrush" Color="#174A85" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="CatalogHeroBrush" Color="#192B43" />
+                    <SolidColorBrush x:Key="CatalogGlyphBackgroundBrush" Color="#233A57" />
+                    <SolidColorBrush x:Key="CatalogGlyphForegroundBrush" Color="#A9D1FF" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="CatalogHeroBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="CatalogGlyphBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="CatalogGlyphForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <DataTemplate x:Key="SoftwareCardTemplate" x:DataType="local:CatalogApplication">
+                <Grid Padding="14" RowSpacing="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Width="48" Height="48" CornerRadius="12" VerticalAlignment="Center"
+                                Background="{ThemeResource CatalogGlyphBackgroundBrush}">
+                            <Grid>
+                                <FontIcon x:Name="CardGlyph" FontSize="21" Glyph="{x:Bind Representative.CategoryInfo.Glyph}"
+                                          Foreground="{ThemeResource CatalogGlyphForegroundBrush}" />
+                                <Image x:Name="CardIcon" Width="34" Height="34" Stretch="Uniform"
+                                       AutomationProperties.AccessibilityView="Raw" />
+                            </Grid>
+                        </Border>
+                        <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                            <TextBlock x:Name="CardName" Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="15"
+                                       TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="CardDescription"
+                                       Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap"
+                                       MaxLines="3" TextTrimming="CharacterEllipsis"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Grid.Row="1" Spacing="3">
+                        <TextBlock Text="{x:Bind Representative.Classification}" Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource CatalogGlyphForegroundBrush}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="F" Modifiers="Control" Invoked="FocusSearch_Invoked" />
+    </Page.KeyboardAccelerators>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <InfoBar x:Name="WinGetSetup" Margin="16,8,16,0" Severity="Warning" IsClosable="False"
+                 Title="WinGet unavailable">
+            <InfoBar.Content>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="OpenAppInstaller" Content="Open App Installer" Click="OpenAppInstaller_Click" />
+                    <Button x:Name="CheckWinGet" Content="Check again" Click="CheckWinGet_Click" />
+                </StackPanel>
+            </InfoBar.Content>
+        </InfoBar>
+        <NavigationView x:Name="CategoryNavigation" Grid.Row="1"
+                        AutomationProperties.Name="Software categories"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        IsPaneToggleButtonVisible="True"
+                        CompactModeThresholdWidth="640"
+                        ExpandedModeThresholdWidth="880"
+                        OpenPaneLength="230"
+                        PaneDisplayMode="Auto"
+                        SelectionChanged="CategoryNavigation_SelectionChanged">
+            <Grid x:Name="CatalogView" MaxWidth="1320" Padding="24,16,24,12" RowSpacing="14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border Background="{ThemeResource CatalogHeroBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="12" Padding="22,16">
+                    <StackPanel Spacing="7">
+                        <TextBlock Text="Discover Windows software"
+                                   Style="{StaticResource TitleTextBlockStyle}"
+                                   AutomationProperties.HeadingLevel="Level1" TextWrapping="Wrap" />
+                        <TextBlock Text="Browse categories or search the WinGet community source."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBox x:Name="SearchBox" Margin="0,5,0,0"
+                                 PlaceholderText="Name, alias, publisher, or WinGet ID"
+                                 AutomationProperties.Name="Search software" TextChanged="SearchBox_TextChanged" />
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="1" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="3">
+                        <TextBlock x:Name="CategoryHeading" Style="{StaticResource SubtitleTextBlockStyle}"
+                                   AutomationProperties.HeadingLevel="Level2" TextWrapping="Wrap" />
+                        <TextBlock x:Name="ResultCount" Style="{StaticResource CaptionTextBlockStyle}"
+                                   AutomationProperties.LiveSetting="Polite"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="SubcategoryPicker" Margin="0,5,0,0" MaxWidth="310"
+                                  AutomationProperties.Name="Subcategory" HorizontalAlignment="Left"
+                                  Visibility="Collapsed" SelectionChanged="SubcategoryPicker_SelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="local:CatalogSubcategory">
+                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <ProgressRing x:Name="RefreshProgress" Visibility="Collapsed" Width="18" Height="18"
+                                      AutomationProperties.Name="Refresh catalogue" />
+                        <Button x:Name="RefreshButton" Click="RefreshButton_Click" IsEnabled="False"
+                                ToolTipService.ToolTip="Refreshes at startup, every hour, or with this button">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <SymbolIcon Symbol="Refresh" />
+                                <TextBlock Text="Refresh" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Grid.Row="2">
+                    <GridView x:Name="SoftwareGrid" AutomationProperties.Name="Software grid" Visibility="Collapsed"
+                              IsItemClickEnabled="True" SelectionMode="None" ItemClick="SoftwareGrid_ItemClick"
+                              ContainerContentChanging="SoftwareGrid_ContainerContentChanging"
+                              SizeChanged="SoftwareGrid_SizeChanged" ItemTemplate="{StaticResource SoftwareCardTemplate}">
+                        <GridView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Horizontal" ItemWidth="234" ItemHeight="174" />
+                            </ItemsPanelTemplate>
+                        </GridView.ItemsPanel>
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,10,10" />
+                                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="CornerRadius" Value="10" />
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                    </GridView>
+
+                    <StackPanel x:Name="EmptyState" Visibility="Collapsed" VerticalAlignment="Center"
+                                HorizontalAlignment="Center" Spacing="8" MaxWidth="360" Margin="12">
+                        <FontIcon Glyph="&#xE721;" FontSize="25"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="No software found" TextAlignment="Center" TextWrapping="Wrap"
+                                   Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="Try another search or category."
+                                   TextAlignment="Center" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock x:Name="CatalogScope" Grid.Row="3" Style="{StaticResource CaptionTextBlockStyle}"
+                           AutomationProperties.LiveSetting="Polite"
+                           ToolTipService.ToolTip="Classification uses tags and names provided by WinGet. Packages without an identifiable category are under Other software."
+                           TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Grid>
+        </NavigationView>
+
+        <Grid x:Name="InstalledView" Grid.Row="1" Visibility="Collapsed" Margin="250,20,24,20" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Spacing="6">
+                <TextBlock Text="Installed software" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock x:Name="InstalledStatus" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                <TextBlock Text="Software recognized by WinGet and Microsoft Store sources."
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                <TextBox x:Name="InstalledSearch" Width="260" PlaceholderText="Search software"
+                         TextChanged="InstalledSearch_TextChanged" />
+                <CheckBox x:Name="UpdatesOnly" Content="Updates available"
+                          Checked="InstalledFilter_Changed" Unchecked="InstalledFilter_Changed" />
+                <Button x:Name="InstalledRefresh" Content="Refresh" Click="InstalledRefresh_Click" />
+            </StackPanel>
+            <ListView x:Name="InstalledList" Grid.Row="2" IsItemClickEnabled="True" SelectionMode="None"
+                      ItemClick="InstalledList_ItemClick" AutomationProperties.Name="Installed software">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:InstalledSoftware">
+                        <Grid Padding="8" ColumnSpacing="16">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{x:Bind Id}" Style="{StaticResource CaptionTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{x:Bind InstalledLabel}" Style="{StaticResource CaptionTextBlockStyle}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{x:Bind UpdateLabel}" VerticalAlignment="Center"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <ContentDialog x:Name="InstalledDialog" Title="Installed software" CloseButtonText="Close"
+                       PrimaryButtonText="Update with WinGet" DefaultButton="Close"
+                       PrimaryButtonClick="InstalledDialog_UpgradeClick">
+            <StackPanel Spacing="8">
+                <TextBlock x:Name="InstalledDetailName" Style="{StaticResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
+                <TextBlock x:Name="InstalledDetailId" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                <TextBlock x:Name="InstalledDetailVersion" TextWrapping="Wrap" />
+                <TextBlock x:Name="InstalledDetailUpdate" TextWrapping="Wrap" />
+                <InfoBar x:Name="InstalledDetailStatus" IsClosable="False" />
+            </StackPanel>
+        </ContentDialog>
+
+        <ContentDialog x:Name="FamilyDialog" CloseButtonText="Close" DefaultButton="Close">
+            <Grid RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="FamilyPackageCount" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Name="FamilyMatchingPackage" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource CatalogGlyphForegroundBrush}" TextWrapping="Wrap"
+                               Visibility="Collapsed" />
+                    <TextBox x:Name="FamilySearchBox" PlaceholderText="Search packages"
+                             AutomationProperties.Name="Search packages"
+                             TextChanged="FamilySearchBox_TextChanged" />
+                </StackPanel>
+
+                <ListView x:Name="FamilyPackages" Grid.Row="1" Height="320"
+                          AutomationProperties.Name="WinGet packages" SelectionMode="None"
+                          IsItemClickEnabled="True" ItemClick="FamilyPackages_ItemClick">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:CatalogEntry">
+                            <Grid Padding="0,7" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
+                                    <TextBlock Text="{x:Bind Id}" TextTrimming="CharacterEllipsis"
+                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{x:Bind Version}" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" MaxWidth="100"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </ContentDialog>
+
+        <ContentDialog x:Name="SoftwareDialog" PrimaryButtonText="Install with WinGet"
+                       CloseButtonText="Close" DefaultButton="Close"
+                       PrimaryButtonClick="SoftwareDialog_InstallClick">
+            <ScrollViewer MaxHeight="480" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Border Width="42" Height="42" CornerRadius="10"
+                            Background="{ThemeResource CatalogGlyphBackgroundBrush}">
+                        <Grid>
+                            <FontIcon x:Name="DetailGlyph" FontSize="18" Foreground="{ThemeResource CatalogGlyphForegroundBrush}" />
+                            <Image x:Name="DetailIcon" Width="30" Height="30" Stretch="Uniform"
+                                   AutomationProperties.AccessibilityView="Raw" />
+                        </Grid>
+                    </Border>
+                    <TextBlock x:Name="DetailCategory" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <InfoBar x:Name="DetailWinGetSetup" Severity="Warning" IsClosable="False" Title="WinGet unavailable">
+                    <InfoBar.Content>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button x:Name="DetailOpenAppInstaller" Content="Open App Installer" Click="OpenAppInstaller_Click" />
+                            <Button x:Name="DetailCheckWinGet" Content="Check again" Click="CheckWinGet_Click" />
+                        </StackPanel>
+                    </InfoBar.Content>
+                </InfoBar>
+
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Publisher" FontWeight="SemiBold" />
+                    <TextBlock x:Name="DetailPublisher" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Spacing="2">
+                    <TextBlock Text="WinGet ID" FontWeight="SemiBold" />
+                    <TextBlock x:Name="DetailId" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <TextBlock x:Name="DetailDescription" TextWrapping="Wrap" />
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="PowerShell command" FontWeight="SemiBold" />
+                    <Border Padding="10,8" CornerRadius="6"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <TextBlock x:Name="DetailCommand" FontFamily="Consolas"
+                                   TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </Border>
+                    <Button x:Name="CopyCommandButton" Content="Copy command" Click="CopyCommand_Click" />
+                </StackPanel>
+
+                <InfoBar x:Name="DetailStatus" IsClosable="False" />
+                <Expander x:Name="CategoryReportExpander" Header="Report an incorrect category" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="8" Padding="0,8,0,0">
+                        <TextBlock Text="Suggest a category and save or copy the report. Reports are not sent automatically."
+                                   TextWrapping="Wrap" />
+                        <ComboBox x:Name="CategoryReportSuggestion" Header="Suggested category"
+                                  DisplayMemberPath="Name" HorizontalAlignment="Stretch" />
+                        <TextBox x:Name="CategoryReportComment" Header="Details (optional)" AcceptsReturn="True"
+                                 TextWrapping="Wrap" MaxLength="1000" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Save report" Click="CategoryReport_SaveClick" />
+                            <Button Content="Copy report" Click="CategoryReport_CopyClick" />
+                        </StackPanel>
+                        <Button Content="Open reports folder" Click="CategoryReport_OpenFolderClick" />
+                        <TextBlock x:Name="CategoryReportFeedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                    </StackPanel>
+                </Expander>
+                <Button x:Name="ReportFailureButton" Content="Prepare a GitHub report"
+                        Visibility="Collapsed" Click="ReportFailure_Click" />
+            </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog x:Name="ReportDialog" Title="WinGet report"
+                       PrimaryButtonText="Copy and open GitHub"
+                       CloseButtonText="Back to details" DefaultButton="Close"
+                       PrimaryButtonClick="ReportDialog_OpenGitHub">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Review the draft, then paste the fields into the GitHub form before submitting."
+                           TextWrapping="Wrap" />
+                <TextBlock x:Name="ReportTitle" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <ComboBox x:Name="ReportFieldPicker" Header="Form field" HorizontalAlignment="Stretch"
+                          SelectionChanged="ReportFieldPicker_SelectionChanged" />
+                <TextBox x:Name="ReportFieldValue" AutomationProperties.Name="Selected field text"
+                         IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="90" MaxHeight="170"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                <Button Content="Copy this field" Click="ReportField_CopyClick" />
+                <TextBlock x:Name="ReportFeedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+            </StackPanel>
+        </ContentDialog>
+    </Grid>
+</Page>

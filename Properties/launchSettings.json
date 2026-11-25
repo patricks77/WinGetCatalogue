@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WinGetCatalogue (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WinGetCatalogue (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

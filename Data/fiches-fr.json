@@ -1,0 +1,340 @@
+{
+  "entries": [
+    {
+      "id": "Mozilla.Firefox",
+      "name": "Mozilla Firefox",
+      "publisher": "Mozilla",
+      "category": "internet",
+      "description": "Navigateur web libre avec protection contre le pistage, extensions et synchronisation entre appareils."
+    },
+    {
+      "id": "Google.Chrome",
+      "name": "Google Chrome",
+      "publisher": "Google LLC",
+      "category": "internet",
+      "description": "Navigateur web qui synchronise les favoris, l’historique et les extensions avec un compte Google."
+    },
+    {
+      "id": "Brave.Brave",
+      "name": "Brave",
+      "publisher": "Brave Software Inc",
+      "category": "internet",
+      "description": "Navigateur basé sur Chromium qui bloque les publicités et les traceurs par défaut."
+    },
+    {
+      "id": "Vivaldi.Vivaldi",
+      "name": "Vivaldi",
+      "publisher": "Vivaldi Technologies AS.",
+      "category": "internet",
+      "description": "Navigateur personnalisable avec empilement des onglets, panneaux latéraux et notes intégrées."
+    },
+    {
+      "id": "Mozilla.Thunderbird",
+      "name": "Mozilla Thunderbird",
+      "publisher": "Mozilla",
+      "category": "internet",
+      "description": "Client de messagerie qui réunit les comptes de courriel, les calendriers et les contacts."
+    },
+    {
+      "id": "Bitwarden.Bitwarden",
+      "name": "Bitwarden",
+      "publisher": "Bitwarden Inc.",
+      "category": "securite",
+      "description": "Gestionnaire de mots de passe avec coffre chiffré et synchronisation entre appareils."
+    },
+    {
+      "id": "WinSCP.WinSCP",
+      "name": "WinSCP",
+      "publisher": "Martin Prikryl",
+      "category": "internet",
+      "description": "Client de transfert de fichiers qui prend en charge SFTP, SCP et FTP."
+    },
+    {
+      "id": "qBittorrent.qBittorrent",
+      "name": "qBittorrent",
+      "publisher": "The qBittorrent project",
+      "category": "internet",
+      "description": "Client BitTorrent libre pour télécharger et partager des fichiers sur des réseaux pair à pair."
+    },
+    {
+      "id": "TheDocumentFoundation.LibreOffice",
+      "name": "LibreOffice",
+      "publisher": "The Document Foundation",
+      "category": "bureautique",
+      "description": "Suite bureautique libre pour les documents texte, les feuilles de calcul et les présentations."
+    },
+    {
+      "id": "ONLYOFFICE.DesktopEditors",
+      "name": "ONLYOFFICE Desktop Editors",
+      "publisher": "Ascensio System SIA",
+      "category": "bureautique",
+      "description": "Suite de bureau pour modifier des documents, des classeurs et des présentations, y compris les fichiers DOCX, XLSX et PPTX."
+    },
+    {
+      "id": "SumatraPDF.SumatraPDF",
+      "name": "SumatraPDF",
+      "publisher": "Krzysztof Kowalczyk",
+      "category": "bureautique",
+      "description": "Lecteur léger de PDF, de livres numériques et de bandes dessinées."
+    },
+    {
+      "id": "Joplin.Joplin",
+      "name": "Joplin",
+      "publisher": "Laurent Cozic",
+      "category": "bureautique",
+      "description": "Application libre pour prendre des notes en Markdown, organiser des carnets et gérer des listes de tâches."
+    },
+    {
+      "id": "DigitalScholar.Zotero",
+      "name": "Zotero",
+      "publisher": "Corporation for Digital Scholarship",
+      "category": "bureautique",
+      "description": "Gestionnaire de références pour organiser des sources de recherche, annoter des PDF et produire des bibliographies."
+    },
+    {
+      "id": "Obsidian.Obsidian",
+      "name": "Obsidian",
+      "publisher": "Obsidian",
+      "category": "bureautique",
+      "description": "Éditeur de notes Markdown locales avec liens entre notes et représentation graphique des connexions."
+    },
+    {
+      "id": "PDFsam.PDFsam",
+      "name": "PDFsam Basic",
+      "publisher": "Sober Lemur S.r.l.",
+      "category": "bureautique",
+      "description": "Outil pour fusionner, diviser, pivoter ou réorganiser les pages de documents PDF."
+    },
+    {
+      "id": "Xournal++.Xournal++",
+      "name": "Xournal++",
+      "publisher": "The Xournal++ Team",
+      "category": "bureautique",
+      "description": "Bloc-notes manuscrit pour dessiner, écrire au stylet et annoter des documents PDF."
+    },
+    {
+      "id": "GIMP.GIMP.3",
+      "name": "GIMP",
+      "publisher": "The GIMP Team",
+      "category": "creation",
+      "description": "Éditeur d’images libre pour la retouche photo, les montages et la création de graphismes."
+    },
+    {
+      "id": "Inkscape.Inkscape",
+      "name": "Inkscape",
+      "publisher": "Inkscape",
+      "category": "creation",
+      "description": "Éditeur de dessin vectoriel destiné aux illustrations, aux diagrammes et aux fichiers SVG."
+    },
+    {
+      "id": "KDE.Krita",
+      "name": "Krita",
+      "publisher": "Krita Foundation",
+      "category": "creation",
+      "description": "Atelier de peinture numérique avec pinceaux personnalisables, calques et outils d’animation."
+    },
+    {
+      "id": "BlenderFoundation.Blender",
+      "name": "Blender",
+      "publisher": "Blender Foundation",
+      "category": "creation",
+      "description": "Suite libre de modélisation, d’animation et de rendu 3D."
+    },
+    {
+      "id": "Audacity.Audacity",
+      "name": "Audacity",
+      "publisher": "Audacity",
+      "category": "creation",
+      "description": "Enregistreur et éditeur audio multipiste pour le montage, le nettoyage et l’export de sons."
+    },
+    {
+      "id": "OBSProject.OBSStudio",
+      "name": "OBS Studio",
+      "publisher": "OBS Project",
+      "category": "creation",
+      "description": "Logiciel libre d’enregistrement d’écran et de diffusion en direct à partir de plusieurs sources vidéo et audio."
+    },
+    {
+      "id": "HandBrake.HandBrake",
+      "name": "HandBrake",
+      "publisher": "The HandBrake Team",
+      "category": "multimedia",
+      "description": "Convertisseur vidéo qui permet de compresser et de réencoder des vidéos dans différents formats."
+    },
+    {
+      "id": "Meltytech.Shotcut",
+      "name": "Shotcut",
+      "publisher": "Meltytech",
+      "category": "creation",
+      "description": "Éditeur vidéo libre avec montage multipiste, filtres audio et vidéo et export dans plusieurs formats."
+    },
+    {
+      "id": "Microsoft.VisualStudioCode",
+      "name": "Microsoft Visual Studio Code",
+      "publisher": "Microsoft Corporation",
+      "category": "developpement",
+      "description": "Éditeur de code extensible avec débogage, terminal intégré et intégration Git."
+    },
+    {
+      "id": "Git.Git",
+      "name": "Git",
+      "publisher": "The Git Development Community",
+      "category": "developpement",
+      "description": "Système de gestion de versions distribué pour suivre les changements d’un projet et travailler en équipe."
+    },
+    {
+      "id": "Python.Python.3.14",
+      "name": "Python 3.14",
+      "publisher": "Python Software Foundation",
+      "category": "developpement",
+      "description": "Interpréteur Python 3.14 pour écrire et exécuter des scripts, des applications et des outils d’automatisation."
+    },
+    {
+      "id": "OpenJS.NodeJS.LTS",
+      "name": "Node.js (LTS)",
+      "publisher": "Node.js Foundation",
+      "category": "developpement",
+      "description": "Version à support prolongé de l’environnement d’exécution JavaScript Node.js."
+    },
+    {
+      "id": "Notepad++.Notepad++",
+      "name": "Notepad++",
+      "publisher": "Notepad++ Team",
+      "category": "developpement",
+      "description": "Éditeur de texte et de code avec onglets, coloration syntaxique et recherche par expressions régulières."
+    },
+    {
+      "id": "Docker.DockerDesktop",
+      "name": "Docker Desktop",
+      "publisher": "Docker Inc.",
+      "category": "developpement",
+      "description": "Environnement de bureau pour créer, lancer et gérer des conteneurs Docker."
+    },
+    {
+      "id": "Postman.Postman",
+      "name": "Postman",
+      "publisher": "Postman",
+      "category": "developpement",
+      "description": "Client pour envoyer des requêtes HTTP, créer des collections et tester des API."
+    },
+    {
+      "id": "DBeaver.DBeaver.Community",
+      "name": "DBeaver",
+      "publisher": "DBeaver Corp",
+      "category": "donnees",
+      "description": "Client pour explorer des bases de données, écrire des requêtes SQL et consulter des résultats."
+    },
+    {
+      "id": "7zip.7zip",
+      "name": "7-Zip",
+      "publisher": "Igor Pavlov",
+      "category": "utilitaires",
+      "description": "Gestionnaire d’archives qui compresse et extrait notamment les formats 7z et ZIP."
+    },
+    {
+      "id": "Microsoft.PowerToys",
+      "name": "PowerToys",
+      "publisher": "Microsoft Corporation",
+      "category": "utilitaires",
+      "description": "Ensemble d’utilitaires Windows pour organiser les fenêtres, renommer des fichiers en lot et personnaliser le clavier."
+    },
+    {
+      "id": "VideoLAN.VLC",
+      "name": "VLC media player",
+      "publisher": "VideoLAN",
+      "category": "multimedia",
+      "description": "Lecteur multimédia libre qui prend en charge de nombreux formats audio et vidéo ainsi que les flux réseau."
+    },
+    {
+      "id": "voidtools.Everything",
+      "name": "Everything",
+      "publisher": "voidtools",
+      "category": "utilitaires",
+      "description": "Outil de recherche rapide de fichiers et de dossiers par leur nom."
+    },
+    {
+      "id": "Rufus.Rufus",
+      "name": "Rufus",
+      "publisher": "pbatard",
+      "category": "utilitaires",
+      "description": "Outil pour créer une clé USB amorçable à partir d’une image disque."
+    },
+    {
+      "id": "KeePassXCTeam.KeePassXC",
+      "name": "KeePassXC",
+      "publisher": "KeePassXC Team",
+      "category": "securite",
+      "description": "Gestionnaire de mots de passe qui conserve les données dans une base locale chiffrée."
+    },
+    {
+      "id": "WinDirStat.WinDirStat",
+      "name": "WinDirStat",
+      "publisher": "The WinDirStat Team",
+      "category": "utilitaires",
+      "description": "Explorateur graphique de l’espace disque qui indique quels fichiers et dossiers occupent le plus de place."
+    },
+    {
+      "id": "CrystalDewWorld.CrystalDiskInfo",
+      "name": "CrystalDiskInfo",
+      "publisher": "Crystal Dew World",
+      "category": "utilitaires",
+      "description": "Outil de suivi de l’état, de la température et des données S.M.A.R.T. des disques compatibles."
+    },
+    {
+      "id": "Valve.Steam",
+      "name": "Steam",
+      "publisher": "Valve Corporation",
+      "category": "jeux",
+      "description": "Client de la plateforme Steam pour acheter, installer et gérer une bibliothèque de jeux PC."
+    },
+    {
+      "id": "EpicGames.EpicGamesLauncher",
+      "name": "Epic Games Launcher",
+      "publisher": "Epic Games, Inc.",
+      "category": "jeux",
+      "description": "Client de l’Epic Games Store pour gérer sa bibliothèque et lancer ses jeux."
+    },
+    {
+      "id": "GOG.Galaxy",
+      "name": "GOG GALAXY",
+      "publisher": "GOG.com",
+      "category": "jeux",
+      "description": "Client GOG pour installer ses jeux et regrouper plusieurs bibliothèques dans une même interface."
+    },
+    {
+      "id": "HeroicGamesLauncher.HeroicGamesLauncher",
+      "name": "Heroic",
+      "publisher": "Heroic Games Launcher",
+      "category": "jeux",
+      "description": "Lanceur libre pour gérer et démarrer des jeux provenant notamment d’Epic Games et de GOG."
+    },
+    {
+      "id": "PrismLauncher.PrismLauncher",
+      "name": "Prism Launcher",
+      "publisher": "Prism Launcher Contributors",
+      "category": "jeux",
+      "description": "Lanceur Minecraft permettant de gérer des profils, des versions et des ensembles de mods."
+    },
+    {
+      "id": "DolphinEmulator.Dolphin",
+      "name": "Dolphin",
+      "publisher": "Dolphin Team",
+      "category": "jeux",
+      "description": "Émulateur libre pour les jeux Nintendo GameCube et Wii."
+    },
+    {
+      "id": "Libretro.RetroArch",
+      "name": "RetroArch",
+      "publisher": "Libretro",
+      "category": "jeux",
+      "description": "Interface qui regroupe des moteurs d’émulation pour jouer à des titres de consoles classiques."
+    },
+    {
+      "id": "SuperTuxKart.SuperTuxKart",
+      "name": "SuperTuxKart",
+      "publisher": "SuperTuxKart Team",
+      "category": "jeux",
+      "description": "Jeu de course de karts libre avec circuits, personnages et modes multijoueurs."
+    }
+  ]
+}

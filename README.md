@@ -1,5 +1,7 @@
 # WinGetCatalogue
 
+<img src="Assets/AppIconSource.png" width="96" height="96" alt="WinGetCatalogue icon">
+
 WinGetCatalogue is a Windows desktop app for exploring the WinGet community source. It’s built with C#, .NET 10, and WinUI 3, and packaged as MSIX.
 
 ## Why I built WinGetCatalogue
@@ -7,6 +9,12 @@ WinGetCatalogue is a Windows desktop app for exploring the WinGet community sour
 I’m Patrick, the creator and maintainer of WinGetCatalogue. [@patricks77 on GitHub](https://github.com/patricks77)
 
 I started this project because I found the WinGet catalogue hard to browse. I wanted an experience like a Linux software centre, where I could pick a category, narrow it down, and discover useful apps I hadn’t thought to search for.
+
+## Download
+
+The [v0.1.0 preview](https://github.com/patricks77/WinGetCatalogue/releases/tag/v0.1.0) includes a Windows x64 MSI and a **Source code (zip)** archive. Download and open `WinGetCatalogue-0.1.0-win-x64.msi`, then start **WinGetCatalogue** from the Start menu.
+
+The GitHub preview was tested on Windows 11 x64. The MSI is unsigned, so Windows or your organization’s policy may warn about it or block it. The installer includes .NET and the Windows App SDK runtime. If your PC lacks the Visual C++ runtime, get the latest x64 redistributable from Microsoft. [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist)
 
 ## What you can do
 
@@ -54,7 +62,8 @@ For installation, installed inventory, and updates, the app needs WinGet from Mi
 | Search, grouping, and categories | `SoftwareCatalog.cs`, `CatalogApplication.cs`, `CatalogCategory.cs`, `CatalogSubcategory.cs` |
 | Installed inventory and WinGet commands | `InstalledSoftware.cs`, `WinGetCommand.cs` |
 | Classification data and maintenance | `Data/`, `docs/classification-maintenance.md` |
+| GitHub installer | `packaging/WinGetCatalogue.wixproj`, `packaging/WinGetCatalogue.wxs` |
 
 ## Release status
 
-The app currently runs as a local development build. Microsoft Store distribution is planned.
+The GitHub MSI is a public preview. The Visual Studio solution also builds the packaged MSIX app, and Microsoft Store distribution is planned. The [installer build notes](packaging/README.md) document how to reproduce the GitHub installer.
