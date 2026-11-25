@@ -1,6 +1,12 @@
 # WinGetCatalogue
 
-WinGetCatalogue is a desktop software catalogue for Windows. Browse the WinGet community source by category to discover apps even when you don't know their names. The application is built with C#, .NET 10, and WinUI 3 and uses MSIX packaging.
+WinGetCatalogue is a Windows desktop app for exploring the WinGet community source. It’s built with C#, .NET 10, and WinUI 3, and packaged as MSIX.
+
+## Why I built WinGetCatalogue
+
+I’m Patrick, the creator and maintainer of WinGetCatalogue. [@patricks77 on GitHub](https://github.com/patricks77)
+
+I started this project because I found the WinGet catalogue hard to browse. I wanted an experience like a Linux software centre, where I could pick a category, narrow it down, and discover useful apps I hadn’t thought to search for.
 
 ## What you can do
 
