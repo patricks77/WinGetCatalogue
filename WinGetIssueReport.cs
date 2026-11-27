@@ -31,9 +31,7 @@ internal static class WinGetIssueReport
     // Prepare a draft for user review; never submit an issue automatically.
     internal static WinGetIssueDraft Prepare(WinGetInstallationFailure failure)
     {
-        string diagnostics = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Packages", "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe", "LocalState", "DiagOutputDir");
-        string[] log = ReadMatchingLog(failure, diagnostics);
+        string[] log = WinGetCommand.ReadOperationLog(failure.ProcessId, failure.StartedUtc);
         string? attemptedVersion = Extract(log, @"\[CLI \] Manifest fields: Name \[.*\], Version \[([\w.+~-]{1,100})\]");
         string? wingetVersion = Extract(log, @"\[CORE\] WinGet, version \[([\d.]+)\]");
         string? windowsVersion = Extract(log, @"\[CORE\] OS: (Windows\.Desktop v[\d.]+)");
@@ -85,50 +83,6 @@ internal static class WinGetIssueReport
             new("Environment", string.Join("\n", environment)),
         };
         return new WinGetIssueDraft(title, new Uri($"{FormUrl}&title={Uri.EscapeDataString(title)}"), fields);
-    }
-
-    private static string[] ReadMatchingLog(WinGetInstallationFailure failure, string directory)
-    {
-        try
-        {
-            var logs = new DirectoryInfo(directory).EnumerateFiles("WinGet-*.log")
-                .Where(log => log.LastWriteTimeUtc >= failure.StartedUtc.AddSeconds(-2))
-                .OrderByDescending(log => log.LastWriteTimeUtc);
-            string processMarker = $"[CORE] Process: winget.exe[{failure.ProcessId}]";
-            foreach (var file in logs)
-            {
-                try
-                {
-                    using var stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-                    using var reader = new StreamReader(stream);
-                    var header = new List<string>();
-                    while (header.Count < 12 && reader.ReadLine() is { } line)
-                    {
-                        header.Add(line);
-                    }
-
-                    if (header.Any(line => line.Contains(processMarker, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        while (reader.ReadLine() is { } line)
-                        {
-                            header.Add(line);
-                        }
-
-                        return header.ToArray();
-                    }
-                }
-                catch (IOException)
-                {
-                    // WinGet can rotate an unrelated log while the directory is being inspected.
-                }
-            }
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            // The failure can still be reported using the process exit code and catalogue data.
-        }
-
-        return [];
     }
 
     private static string? Extract(IEnumerable<string> lines, string pattern)

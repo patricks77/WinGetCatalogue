@@ -7,6 +7,9 @@ namespace WinGetCatalogue;
 
 internal static partial class WinGetCommand
 {
+    private const uint PackagesInUse = 0x80073D02;
+    internal const int ElevationCancelled = 1223; // ERROR_CANCELLED from ShellExecute.
+
     [GeneratedRegex(@"\A[^\s\p{Cc}\\/:*?""<>|]+\z", RegexOptions.CultureInvariant)]
     private static partial Regex PackageIdPattern();
 
@@ -92,6 +95,65 @@ internal static partial class WinGetCommand
     internal static string GetFailureMessage(int exitCode) => GetSourceFailureMessage(exitCode) ??
         $"WinGet exited with code 0x{exitCode:X8}.";
 
+    internal static bool WasPackageInUse(int exitCode, IEnumerable<string> log) =>
+        unchecked((uint)exitCode) == PackagesInUse || log.Any(line =>
+            line.Contains("[CORE] Deployment operation", StringComparison.Ordinal) &&
+            line.Contains("error 0x80073D02", StringComparison.OrdinalIgnoreCase));
+
+    internal static string? ReadAttemptedVersion(IEnumerable<string> log)
+    {
+        foreach (string line in log)
+        {
+            var match = Regex.Match(line, @"\[CLI \] Manifest fields: Name \[.*\], Version \[([^\[\]\r\n]{1,128})\]");
+            if (match.Success) return match.Groups[1].Value;
+        }
+
+        return null;
+    }
+
+    // The exact process ID and start time keep parallel WinGet commands from sharing a log.
+    internal static string[] ReadOperationLog(int processId, DateTime startedUtc)
+    {
+        string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Packages", "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe", "LocalState", "DiagOutputDir");
+        try
+        {
+            var logs = new DirectoryInfo(directory).EnumerateFiles("WinGet-*.log")
+                .Where(log => log.LastWriteTimeUtc >= startedUtc.AddSeconds(-2))
+                .OrderByDescending(log => log.LastWriteTimeUtc);
+            string processMarker = $"[CORE] Process: winget.exe[{processId}]";
+            foreach (var file in logs)
+            {
+                try
+                {
+                    using var stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                    using var reader = new StreamReader(stream);
+                    var header = new List<string>();
+                    while (header.Count < 12 && reader.ReadLine() is { } line)
+                        header.Add(line);
+
+                    if (!header.Any(line => line.Contains(processMarker, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+
+                    while (reader.ReadLine() is { } line)
+                        header.Add(line);
+
+                    return header.ToArray();
+                }
+                catch (IOException)
+                {
+                    // WinGet can rotate logs while the directory is being inspected.
+                }
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Debug.WriteLine(exception);
+        }
+
+        return [];
+    }
+
     private static Process Start(string id, string action, string source = "winget")
     {
         ValidateId(id);
@@ -105,6 +167,9 @@ internal static partial class WinGetCommand
         {
             FileName = wingetPath,
             UseShellExecute = true,
+            // Windows requests elevation for this operation. Catalogue and inventory
+            // reads keep running at the user's normal privilege level.
+            Verb = "runas",
         };
 
         foreach (string argument in new[] { action, "--id", id, "--exact", "--source", source })

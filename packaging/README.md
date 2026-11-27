@@ -3,7 +3,7 @@
 Run these commands from the repository root on Windows with the development tools listed in the project README. Use a fresh output directory so files from an older build cannot become part of the installer.
 
 ```powershell
-$version = "0.1.0"
+$version = "0.1.4"
 $releaseDir = Join-Path ([IO.Path]::GetTempPath()) "WinGetCatalogue-$([Guid]::NewGuid())"
 $appDir = Join-Path $releaseDir "app"
 $setupDir = Join-Path $releaseDir "setup"

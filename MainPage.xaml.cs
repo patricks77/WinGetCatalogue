@@ -40,6 +40,8 @@ public sealed partial class MainPage : Page
     private bool _installedRefreshPending;
     private bool _installedNeedsRefresh;
     private bool _upgradeRunning;
+    private InstalledUpgrade? _lastUpgrade;
+    private (InstalledSoftware Package, RunningInstalledProcess[] Processes)? _blockedUpgrade;
     private Task<bool>? _winGetCheckTask;
     private bool _winGetAvailable;
     private bool _openingAppInstaller;
@@ -127,10 +129,15 @@ public sealed partial class MainPage : Page
 
     private async void CheckWinGet_Click(object sender, RoutedEventArgs args) => await RecheckWinGetAfterSetupAsync();
 
-    // Returning from the Store triggers another probe for the current Windows user.
-    internal Task OnWindowActivatedAsync() => _checkingAfterInstaller && !_openingAppInstaller
-        ? RecheckWinGetAfterSetupAsync()
-        : Task.CompletedTask;
+    // An app can finish updating outside WinGetCatalogue while this window is inactive.
+    internal Task OnWindowActivatedAsync()
+    {
+        if (_checkingAfterInstaller && !_openingAppInstaller)
+            return RecheckWinGetAfterSetupAsync();
+        if (InstalledView.Visibility == Visibility.Visible && !_upgradeRunning)
+            return RefreshInstalledAsync();
+        return Task.CompletedTask;
+    }
 
     private async Task RecheckWinGetAfterSetupAsync()
     {
@@ -248,10 +255,7 @@ public sealed partial class MainPage : Page
             CatalogView.Visibility = Visibility.Collapsed;
             InstalledView.Visibility = Visibility.Visible;
             AdjustInstalledMargin();
-            if (_installed is null || _installedNeedsRefresh)
-            {
-                _ = RefreshInstalledAsync();
-            }
+            _ = RefreshInstalledAsync();
             return;
         }
 
@@ -289,7 +293,7 @@ public sealed partial class MainPage : Page
 
     private async Task ReadInstalledInventoryAsync()
     {
-        InstalledRefresh.IsEnabled = false;
+        InstalledRefresh.IsEnabled = InstalledCheckVersion.IsEnabled = false;
         try
         {
             do
@@ -310,10 +314,11 @@ public sealed partial class MainPage : Page
                     _installedNeedsRefresh = false;
                     UpdateInstalledResults();
                     UpdateOpenInstalledDetails();
+                    DiagnosticLog.Write($"Installed inventory refreshed: {_installed.Length} entries, partial={_installedWarning is not null}");
                 }
                 catch (Exception exception)
                 {
-                    Debug.WriteLine(exception);
+                    DiagnosticLog.Write("Installed inventory refresh failed", exception);
                     _installedNeedsRefresh = true;
                     InstalledStatus.Text = await RefreshWinGetAvailabilityAsync()
                         ? $"Unable to read installed software: {exception.Message}"
@@ -324,11 +329,12 @@ public sealed partial class MainPage : Page
                         InstalledDialog.IsPrimaryButtonEnabled = false;
                     }
                 }
+                UpdateInstalledUpgradeFeedback();
             } while (_installedRefreshPending);
         }
         finally
         {
-            InstalledRefresh.IsEnabled = true;
+            InstalledRefresh.IsEnabled = InstalledCheckVersion.IsEnabled = true;
         }
     }
 
@@ -352,8 +358,11 @@ public sealed partial class MainPage : Page
     {
         if (args.ClickedItem is not InstalledSoftware item || _selectedInstalled is not null) return;
         _selectedInstalled = item;
+        _blockedUpgrade = null;
         UpdateInstalledDetails(item);
         InstalledDetailStatus.IsOpen = false;
+        InstalledForceClose.Visibility = Visibility.Collapsed;
+        UpdateInstalledUpgradeFeedback();
         InstalledDialog.XamlRoot = XamlRoot;
         try { await InstalledDialog.ShowAsync(); }
         finally { _selectedInstalled = null; }
@@ -376,12 +385,18 @@ public sealed partial class MainPage : Page
     {
         if (_selectedInstalled is not { } selected || _installed is null) return;
 
-        var matches = _installed.Where(item => item.Id.Equals(selected.Id, StringComparison.OrdinalIgnoreCase) &&
-            item.Source.Equals(selected.Source, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var matches = _installed.Where(selected.SamePackage).ToArray();
         // Prefer the newly installed version after an upgrade, then the originally selected version.
-        var current = matches.FirstOrDefault(item => item.InstalledVersion == selected.AvailableVersion)
+        var current = _lastUpgrade?.FindInstalledUpdate(matches)
             ?? matches.FirstOrDefault(item => item.InstalledVersion == selected.InstalledVersion)
             ?? matches.FirstOrDefault();
+        if (_blockedUpgrade is { } blocked &&
+            (current is not { UpdateAvailable: true } || current.InstalledVersion != blocked.Package.InstalledVersion))
+        {
+            _blockedUpgrade = null;
+            InstalledForceClose.Visibility = Visibility.Collapsed;
+            InstalledDetailStatus.IsOpen = false;
+        }
         if (current is not null)
         {
             _selectedInstalled = current;
@@ -395,32 +410,124 @@ public sealed partial class MainPage : Page
         InstalledDialog.IsPrimaryButtonEnabled = false;
     }
 
+    private void UpdateInstalledUpgradeFeedback()
+    {
+        if (_lastUpgrade is not { } upgrade || _selectedInstalled is not { } selected ||
+            !upgrade.Previous.SamePackage(selected)) return;
+
+        var verified = _installedNeedsRefresh ? null : upgrade.FindInstalledUpdate(_installed);
+        InstalledDetailStatus.Severity = verified is null ? InfoBarSeverity.Warning : InfoBarSeverity.Success;
+        if (verified is not null)
+            InstalledDetailStatus.Message = $"Installed version {verified.InstalledVersion} confirmed.";
+        else if (upgrade.PackageInUse)
+            InstalledDetailStatus.Message = $"Windows reports that {selected.Name} is still in use (0x80073D02). " +
+                "Exit the app and its background tasks, then select Check again. Retry if the old version is still installed.";
+        else if (upgrade.ExitCode == 0)
+            InstalledDetailStatus.Message = "The new installed version is still unconfirmed. Check again after the installer finishes.";
+        else
+            InstalledDetailStatus.Message = WinGetCommand.GetFailureMessage(upgrade.ExitCode);
+        InstalledCheckVersion.Visibility = verified is null ? Visibility.Visible : Visibility.Collapsed;
+        InstalledDetailStatus.IsOpen = true;
+    }
+
     private async void InstalledDialog_UpgradeClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         args.Cancel = true;
-        if (_selectedInstalled is not { UpdateAvailable: true } item || _upgradeRunning || !_winGetAvailable) return;
+        if (_selectedInstalled is { UpdateAvailable: true } item)
+            await UpgradeInstalledAsync(item);
+    }
+
+    private async void InstalledForceClose_Click(object sender, RoutedEventArgs args)
+    {
+        if (_blockedUpgrade is { } blocked &&
+            _selectedInstalled is { UpdateAvailable: true } item &&
+            blocked.Package.SamePackage(item) && blocked.Package.InstalledVersion == item.InstalledVersion)
+            await UpgradeInstalledAsync(item, blocked.Processes);
+    }
+
+    private async Task UpgradeInstalledAsync(InstalledSoftware item, RunningInstalledProcess[]? close = null)
+    {
+        if (_upgradeRunning || !_winGetAvailable || _installedNeedsRefresh) return;
         _upgradeRunning = true;
+        _lastUpgrade = null;
+        _blockedUpgrade = null;
         InstalledDialog.IsPrimaryButtonEnabled = false;
+        InstalledCheckVersion.Visibility = Visibility.Collapsed;
+        InstalledForceClose.Visibility = Visibility.Collapsed;
         try
         {
+            InstalledDetailStatus.Severity = InfoBarSeverity.Informational;
+            InstalledDetailStatus.Message = close is null
+                ? "Checking whether the app is running…"
+                : $"Closing {item.Name}…";
+            InstalledDetailStatus.IsOpen = true;
+
+            bool closed = close is null || await RunningInstalledApplication.ForceCloseAsync(close);
+            var running = await Task.Run(() => RunningInstalledApplication.FindAsync(item));
+            if (_selectedInstalled is not { UpdateAvailable: true } selected ||
+                !item.SamePackage(selected) || selected.InstalledVersion != item.InstalledVersion)
+                return;
+
+            if (running.Length > 0 || !closed)
+            {
+                InstalledDetailStatus.Severity = InfoBarSeverity.Warning;
+                InstalledDetailStatus.Message = running.Length > 0
+                    ? $"{item.Name} is running. Close the app, including its background tasks, then select Update with WinGet again. " +
+                        "Force closing stops matched background tasks and can lose unsaved changes."
+                    : $"Windows could not confirm that {item.Name} closed. Close it yourself and retry the update.";
+                if (running.Length > 0)
+                {
+                    _blockedUpgrade = (item, running);
+                    InstalledForceClose.Visibility = Visibility.Visible;
+                }
+                return;
+            }
+
+            DateTime startedUtc = DateTime.UtcNow;
             using var process = WinGetCommand.StartUpgrade(item.Id, item.Source);
+            int processId = process.Id;
             InstalledDetailStatus.Severity = InfoBarSeverity.Informational;
             InstalledDetailStatus.Message = "Follow the update in the WinGet window.";
             InstalledDetailStatus.IsOpen = true;
             await process.WaitForExitAsync();
-            if (_selectedInstalled == item)
+            int exitCode = process.ExitCode;
+            var log = await Task.Run(() => WinGetCommand.ReadOperationLog(processId, startedUtc));
+            var upgrade = new InstalledUpgrade(item, WinGetCommand.ReadAttemptedVersion(log) ?? item.AvailableVersion,
+                exitCode, WinGetCommand.WasPackageInUse(exitCode, log));
+            _lastUpgrade = upgrade;
+            DiagnosticLog.Write($"WinGet upgrade {item.Source}/{item.Id}: target={upgrade.TargetVersion}, exit=0x{exitCode:X8}, packageInUse={upgrade.PackageInUse}");
+            if (_selectedInstalled is { } current && item.SamePackage(current))
             {
-                InstalledDetailStatus.Severity = process.ExitCode == 0 ? InfoBarSeverity.Success : InfoBarSeverity.Warning;
-                InstalledDetailStatus.Message = process.ExitCode == 0
-                    ? "WinGet finished the update."
-                    : WinGetCommand.GetFailureMessage(process.ExitCode);
+                InstalledDetailStatus.Severity = InfoBarSeverity.Informational;
+                InstalledDetailStatus.Message = "Checking the installed version…";
+                InstalledDetailStatus.IsOpen = true;
             }
             await RefreshInstalledAsync(afterChange: true);
+            // Some installers register their version just after the WinGet process exits.
+            if (exitCode == 0 && !upgrade.PackageInUse && !_installedNeedsRefresh &&
+                upgrade.FindInstalledUpdate(_installed) is null)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await RefreshInstalledAsync(afterChange: true);
+            }
+            DiagnosticLog.Write($"WinGet upgrade verification {item.Source}/{item.Id}: " +
+                $"confirmed={(!_installedNeedsRefresh && upgrade.FindInstalledUpdate(_installed) is not null)}");
+        }
+        catch (Win32Exception exception) when (exception.NativeErrorCode == WinGetCommand.ElevationCancelled)
+        {
+            DiagnosticLog.Write($"Windows elevation cancelled for upgrade {item.Source}/{item.Id}");
+            if (_selectedInstalled is { } selected && item.SamePackage(selected))
+            {
+                InstalledDetailStatus.Severity = InfoBarSeverity.Informational;
+                InstalledDetailStatus.Message = "Administrator approval was cancelled. The update did not start.";
+                InstalledDetailStatus.IsOpen = true;
+            }
         }
         catch (Exception exception) when (exception is Win32Exception or IOException or InvalidOperationException)
         {
+            DiagnosticLog.Write($"WinGet upgrade failed to run for {item.Source}/{item.Id}", exception);
             bool available = await RefreshWinGetAvailabilityAsync();
-            if (_selectedInstalled == item)
+            if (_selectedInstalled is { } selected && item.SamePackage(selected))
             {
                 InstalledDetailStatus.Severity = InfoBarSeverity.Error;
                 InstalledDetailStatus.Message = available ? exception.Message
@@ -905,6 +1012,13 @@ public sealed partial class MainPage : Page
                 if (_installed is not null || InstalledView.Visibility == Visibility.Visible)
                     _ = RefreshInstalledAsync(afterChange: true);
             }
+        }
+        catch (Win32Exception exception) when (exception.NativeErrorCode == WinGetCommand.ElevationCancelled)
+        {
+            DiagnosticLog.Write($"Windows elevation cancelled for installation {entry.Id}");
+            if (_openEntry?.Id == entry.Id)
+                ShowDetailStatus("Installation cancelled", "Administrator approval was cancelled. WinGet did not start.",
+                    InfoBarSeverity.Informational);
         }
         catch (Exception exception) when (exception is FileNotFoundException or Win32Exception or InvalidOperationException)
         {

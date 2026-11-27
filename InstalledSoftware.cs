@@ -12,6 +12,19 @@ public sealed record InstalledSoftware(string Name, string Id, string InstalledV
 {
     public string InstalledLabel => $"Installed: {InstalledVersion}";
     public string UpdateLabel => UpdateAvailable ? $"Update: {AvailableVersion} · {Source}" : $"No update detected · {Source}";
+
+    internal bool SamePackage(InstalledSoftware item) =>
+        Id.Equals(item.Id, StringComparison.OrdinalIgnoreCase) &&
+        Source.Equals(item.Source, StringComparison.OrdinalIgnoreCase);
+}
+
+internal sealed record InstalledUpgrade(InstalledSoftware Previous, string? TargetVersion, int ExitCode, bool PackageInUse)
+{
+    // WinGet can return zero as soon as an MSIX package is staged. Verify the target against the inventory.
+    internal InstalledSoftware? FindInstalledUpdate(InstalledSoftware[]? inventory) =>
+        inventory?.FirstOrDefault(item => Previous.SamePackage(item) &&
+            !item.InstalledVersion.Equals(Previous.InstalledVersion, StringComparison.OrdinalIgnoreCase) &&
+            item.InstalledVersion.Equals(TargetVersion, StringComparison.OrdinalIgnoreCase));
 }
 
 internal sealed record InstalledSnapshot(InstalledSoftware[] Packages, string? Warning);

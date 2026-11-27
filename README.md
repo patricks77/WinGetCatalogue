@@ -12,9 +12,9 @@ I started this project because I found the WinGet catalogue hard to browse. I wa
 
 ## Download
 
-- **Portable ZIP** — Extract the entire archive and open `WinGetCatalogue.exe`. Keep the extracted files together. [Download for Windows 11 x64](https://github.com/patricks77/WinGetCatalogue/releases/download/v0.1.0/WinGetCatalogue-0.1.0-win-x64-portable.zip)
-- **MSI** — Run the installer, then open **WinGetCatalogue** from the Start menu. [Download for Windows 11 x64](https://github.com/patricks77/WinGetCatalogue/releases/download/v0.1.0/WinGetCatalogue-0.1.0-win-x64.msi)
-- **Source code** — Download the Visual Studio solution and installer project from the [v0.1.0 release](https://github.com/patricks77/WinGetCatalogue/releases/tag/v0.1.0).
+- **Portable ZIP** — Extract the entire archive and open `WinGetCatalogue.exe`. Keep the extracted files together. [Download for Windows 11 x64](https://github.com/patricks77/WinGetCatalogue/releases/download/v0.1.4/WinGetCatalogue-0.1.4-win-x64-portable.zip)
+- **MSI** — Run the installer, then open **WinGetCatalogue** from the Start menu. [Download for Windows 11 x64](https://github.com/patricks77/WinGetCatalogue/releases/download/v0.1.4/WinGetCatalogue-0.1.4-win-x64.msi)
+- **Source code** — Download the Visual Studio solution and installer project from the [v0.1.4 release](https://github.com/patricks77/WinGetCatalogue/releases/tag/v0.1.4).
 
 Both builds include .NET and the Windows App SDK runtime. The app stores its cache and reports in `%LOCALAPPDATA%\WinGetCatalogue`. Windows or your organization’s policy may warn about or block the unsigned builds. If your PC needs the Visual C++ runtime, download the x64 redistributable. [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist)
 
@@ -26,6 +26,8 @@ Both builds include .NET and the Windows App SDK runtime. The app stores its cac
 - Inspect the publisher, description, and icon when WinGet provides them. Details and icons are fetched in the background and cached locally.
 - Copy the PowerShell installation command from a package's details, or select **Install with WinGet** to run it.
 - Open **Installed software** to see versions and available updates reported by WinGet's community and Microsoft Store sources. Use **Updates available** to narrow the list.
+
+When you start an installation or update, WinGetCatalogue asks Windows to run WinGet with administrator privileges. You can cancel the Windows prompt to stop the operation. Browsing the catalogue and checking installed versions run with your normal Windows permissions.
 
 ## Catalogue and updates
 
